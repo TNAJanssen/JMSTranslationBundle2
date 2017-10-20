@@ -105,9 +105,10 @@ class AnnotationExtractor implements FileVisitorInterface, LoggerAwareInterface,
         }
 
         $docComments = $this->docParser->parse($node->getDocComment(), 'file '.$this->file.' near line '.$node->getLine());
+
         foreach ($docComments as $annot) {
             if ($annot instanceof TransString) {
-                $this->parseStringItem($node, $annot->domain);
+                $this->parseStringItem($node, $annot->domain, $annot->prefix);
             } elseif ($annot instanceof TransArrayKeys) {
                 $this->parseArray($node, $annot->domain, self::ARRAY_TARGET_KEY);
             } elseif ($annot instanceof TransArrayValues) {
@@ -129,6 +130,7 @@ class AnnotationExtractor implements FileVisitorInterface, LoggerAwareInterface,
         }
 
         $docComment = $node->getDocComment();
+
         return $docComment && strpos($docComment, '@Trans');
     }
 
@@ -138,7 +140,7 @@ class AnnotationExtractor implements FileVisitorInterface, LoggerAwareInterface,
      * @param Node $node
      * @param string $domain
      */
-    protected function parseStringItem(Node $node, $domain)
+    protected function parseStringItem(Node $node, $domain, $prefix = null)
     {
         $ignore = false;
         $desc = $meaning = null;
@@ -162,7 +164,17 @@ class AnnotationExtractor implements FileVisitorInterface, LoggerAwareInterface,
             return;
         }
 
-        $message = new Message($stringNode->value, $domain);
+        $value = $stringNode->value;
+
+        if (!$value) {
+            return;
+        }
+
+        if ($prefix) {
+            $value = "{$prefix}.{$value}";
+        }
+
+        $message = new Message($value, $domain);
         $message
             ->setDesc($desc)
             ->setMeaning($meaning)
@@ -232,10 +244,16 @@ class AnnotationExtractor implements FileVisitorInterface, LoggerAwareInterface,
          * </code>
          */
         if (isset($node->props) && is_array($node->props)) {
-            // A legelsőt adja vissza
             foreach ($node->props as $prop) {
                 if ($prop instanceof Node\Stmt\PropertyProperty && get_class($prop->default) == $nodeClass) {
                     return $prop->default;
+                }
+            }
+        }
+        if (isset($node->consts) && is_array($node->consts)) {
+            foreach ($node->consts as $const) {
+                if ($const instanceof Node\Const_ && get_class($const->value) == $nodeClass) {
+                    return $const->value;
                 }
             }
         }

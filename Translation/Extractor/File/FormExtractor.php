@@ -308,6 +308,20 @@ class FormExtractor implements FileVisitorInterface, LoggerAwareInterface, NodeV
                 $newItem->value = $subItem->key;
                 $subItem = $newItem;
             }
+
+            if (isset($subItem->key->items) && \is_array($subItem->key->items)) {
+                foreach ($subItem->key->items as $subSubItem) {
+                    if (Kernel::VERSION_ID < 30000 && $choicesAsValues === true || Kernel::VERSION_ID >= 30000) {
+                        $newItem = clone $subSubItem;
+                        $newItem->key = $subSubItem->value;
+                        $newItem->value = $subSubItem->key;
+                        $subSubItem = $newItem;
+                    }
+
+                    $this->parseItem($subSubItem, $domain);
+                }
+            }
+
             $this->parseItem($subItem, $domain);
         }
 

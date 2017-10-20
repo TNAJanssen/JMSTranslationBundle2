@@ -28,5 +28,9 @@ final class TransString
     /**
      * @var string
      */
+    public $prefix = '';
+    /**
+     * @var string
+     */
     public $domain = 'messages';
 }
