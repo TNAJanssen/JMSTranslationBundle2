@@ -36,16 +36,27 @@ use Symfony\Component\HttpFoundation\Request;
 class ApiController
 {
     /**
-     * @DI\Inject("jms_translation.config_factory")
      * @var ConfigFactory
      */
     private $configFactory;
 
     /**
-     * @DI\Inject("jms_translation.updater")
      * @var Updater
      */
     private $updater;
+
+    /**
+     * ApiController constructor.
+     *
+     * @param ConfigFactory $configFactory
+     * @param Updater       $updater
+     */
+    public function __construct(ConfigFactory $configFactory, Updater $updater)
+    {
+        $this->configFactory = $configFactory;
+        $this->updater = $updater;
+    }
+
 
     /**
      * @Route("/configs/{config}/domains/{domain}/locales/{locale}/messages",

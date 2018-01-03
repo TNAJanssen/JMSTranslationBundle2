@@ -484,7 +484,9 @@ class FormExtractor implements FileVisitorInterface, LoggerAwareInterface, NodeV
         }
 
         if (!$docComment) {
-            $docComment = $item->value->getDocComment();
+            if ($item->value) {
+                $docComment = $item->value->getDocComment();
+            }
         }
 
         $docComment = is_object($docComment) ? $docComment->getText() : null;

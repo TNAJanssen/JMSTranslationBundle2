@@ -23,6 +23,7 @@ use Doctrine\Common\Annotations\DocParser;
 use Doctrine\Common\Annotations\Reader;
 use JMS\TranslationBundle\Translation\ConfigBuilder;
 use JMS\TranslationBundle\Exception\RuntimeException;
+use JMS\TranslationBundle\Translation\ConfigFactory;
 use Symfony\Component\Console\Input\InputArgument;
 use JMS\TranslationBundle\Translation\Config;
 use JMS\TranslationBundle\Logger\OutputLogger;
@@ -38,6 +39,15 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
  */
 class ExtractTranslationCommand extends ContainerAwareCommand
 {
+    /** @var ConfigFactory */
+    private $configFactory;
+
+    public function __construct(?string $name = null, ConfigFactory $configFactory)
+    {
+        parent::__construct($name);
+        $this->configFactory = $configFactory;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -75,7 +85,7 @@ class ExtractTranslationCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $builder = $input->getOption('config') ?
-            $this->getContainer()->get('jms_translation.config_factory')->getBuilder($input->getOption('config'))
+            $this->configFactory->getBuilder($input->getOption('config'))
             : new ConfigBuilder();
 
         $this->updateWithInput($input, $builder);
